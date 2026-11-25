@@ -114,3 +114,52 @@ environments:
 ```
 .\gradlew.bat runCommand "-Pargs=dbm-generate-gorm-changelog changelog.groovy"
 ```
+* 9º Renomear arquivo criado pelo nome da Migration: ```001-create-security-tables.groovy```, criar a segunda Migration: ``` 002-insert-default-roles.groovy``` (OBS: Se tiver no Intelijj, não crie diretamente uma classe groovy, crie um file e nomeie manualmente a extensão ```.groovy```)
+e criar ```changelog.groovy``` vázio.
+* Em ```changelog.groovy``` adicionar:
+```
+databaseChangeLog = {
+    include file: '001-create-security-tables.groovy'
+
+    include file: '002-insert-default-roles.groovy'
+}
+```
+* 10º Adicionar a Migration 002:
+```
+databaseChangeLog = {
+
+    changeSet(author: "linketinder", id: "insert-default-roles") {
+
+        ['ROLE_CANDIDATO', 'ROLE_EMPRESA', 'ROLE_RECRUTADOR'].each { authority ->
+
+            insert(tableName: "role") {
+                column(name: "id", valueComputed: "nextval('hibernate_sequence')")
+                column(name: "version", valueNumeric: 0)
+                column(name: "authority", value: authority)
+            }
+        }
+    }
+}
+```
+* 11º Voltar para a versão original do BootStrap:
+```
+package linketinder.rest.api
+
+class BootStrap {
+
+    def init = { servletContext ->
+    }
+
+    def destroy = {
+    }
+}
+```
+* Verificar application.yml:
+```
+grails:
+  plugin:
+    databasemigration:
+      changelogFileName: changelog.groovy
+   -> updateOnStart: true
+      updateOnStartFileName: changelog.groovy
+```

@@ -7,7 +7,7 @@ grails:
   plugin:
     databasemigration:
       changelogFileName: changelog.groovy
-      updateOnStart: false
+      updateOnStart: true
       updateOnStartFileName: changelog.groovy
   codegen:
     defaultPackage: linketinder.rest.api
