@@ -1,11 +1,21 @@
-## Grails 6.2.3 Documentation
+# Passo a passo para utilizar JWT e Autorização/Autenticação com diferentes usuários
 
-- [User Guide](https://docs.grails.org/6.2.3/guide/index.html)
-- [API Reference](https://docs.grails.org/6.2.3/api/index.html)
-- [Grails Guides](https://guides.grails.org/index.html)
----
+* 1º Rodar no terminal:.\gradlew.bat runCommand "-Pargs=s2-quickstart linketinder.rest.api Usuario Role"
+* 2º Adicionar conf/application → grails.plugin.springsecurity.userLookup.usernamePropertyName = 'email'
+* 3º Adicionar em grails-app/init/linketinder/rest/api/BootStrap.groovy ->
+  "@Transactional
+  void inicializarRoles() {
+  List<String> authorities = [
+  'ROLE_CANDIDATO',
+  'ROLE_EMPRESA',
+  'ROLE_RECRUTADOR'
+  ]
 
-## Feature views-json documentation
-
-- [Grails JSON Views documentation](https://views.grails.org/)
-
+        authorities.each { String authority ->
+            if (!Role.findByAuthority(authority)) {
+                new Role(authority: authority)
+                    .save(failOnError: true)
+            }
+        }
+  }"
+* 
