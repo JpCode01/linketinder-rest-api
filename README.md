@@ -2,8 +2,9 @@
 
 * 1º Rodar no terminal:.\gradlew.bat runCommand "-Pargs=s2-quickstart linketinder.rest.api Usuario Role"
 * 2º Adicionar conf/application → grails.plugin.springsecurity.userLookup.usernamePropertyName = 'email'
-* 3º Adicionar em grails-app/init/linketinder/rest/api/BootStrap.groovy ->
-  "@Transactional
+* 3º Adicionar em grails-app/init/linketinder/rest/api/BootStrap.groovy
+```
+  @Transactional
   void inicializarRoles() {
   List<String> authorities = [
   'ROLE_CANDIDATO',
@@ -17,5 +18,99 @@
                     .save(failOnError: true)
             }
         }
-  }"
-* 
+  }
+```
+Adicionar no método init: inicializarRoles()
+* 4º Configurar conexão com o BD em grails-app/application.yml
+* 5º Em init/linktinder/rest/api, em BootStrap, testar os Roles:
+```
+    @Transactional
+    void inicializarUsuarioTeste() {
+        if (!Usuario.findByEmail('teste@linketinder.com')) {
+            Usuario usuario = new Usuario(
+                    email: 'teste@linketinder.com',
+                    password: 'SenhaTeste123'
+            ).save(failOnError: true, flush: true)
+
+            Role role = Role.findByAuthority('ROLE_CANDIDATO')
+
+            new UsuarioRole(
+                    usuario: usuario,
+                    role: role
+            ).save(failOnError: true)
+        }
+    }
+```
+Adicionar no método init: inicializarUsuarioTeste()
+* 6º Incializar com Migrations com Liquibase do Grails modificando build.gradle:
+```
+buildscript {
+    repositories {
+        maven { url "https://repo.grails.org/grails/core" }
+        mavenCentral()
+    }
+    dependencies { // Not Published to Gradle Plugin Portal
+        classpath "org.grails:grails-gradle-plugin:6.2.4"
+        classpath "org.grails.plugins:hibernate5:8.1.0"
+        classpath "org.grails.plugins:views-gradle:3.2.3"
+     -> classpath 'org.grails.plugins:database-migration:5.0.0'
+    }
+}
+sourceSets {
+    main {
+        resources {
+            srcDir 'grails-app/migrations'
+        }
+    }
+}
+dependencies {
+    profile "org.grails.profiles:rest-api"
+    implementation "org.grails:grails-core"
+    implementation "org.grails:grails-logging"
+    implementation "org.grails:grails-plugin-databinding"
+    implementation "org.grails:grails-plugin-i18n"
+    implementation "org.grails:grails-plugin-interceptors"
+    implementation "org.grails:grails-plugin-rest"
+    implementation "org.grails:grails-plugin-services"
+    implementation "org.grails:grails-plugin-url-mappings"
+    implementation "org.grails:grails-web-boot"
+    implementation "org.grails.plugins:hibernate5"
+    implementation "org.grails.plugins:views-json"
+    implementation "org.grails.plugins:views-json-templates"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation 'org.grails.plugins:spring-security-core:6.1.2'
+ -> implementation 'org.grails.plugins:database-migration:5.0.0'
+ -> implementation 'org.liquibase:liquibase-core:4.19.0'
+    compileOnly "io.micronaut:micronaut-inject-groovy"
+    console "org.grails:grails-console"
+    runtimeOnly "org.postgresql:postgresql"
+    runtimeOnly "org.apache.tomcat:tomcat-jdbc"
+    testImplementation "io.micronaut:micronaut-inject-groovy"
+    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.grails:views-json-testing-support"
+    testImplementation "org.spockframework:spock-core"
+}
+```
+* 7º Modificar application.yml em conf:
+```
+grails:
+ -> plugin:
+    databasemigration:
+      changelogFileName: changelog.groovy
+      updateOnStart: false
+      updateOnStartFileName: changelog.groovy
+environments:
+  development:
+    dataSource:
+   -> dbCreate: none
+      url: ${DB_URL}
+```
+* 8º Iniciar ChangeLog:
+```
+.\gradlew.bat runCommand "-Pargs=dbm-generate-gorm-changelog changelog.groovy"
+```

@@ -6,6 +6,7 @@ class BootStrap {
 
     def init = { servletContext ->
         inicializarRoles()
+        inicializarUsuarioTeste()
     }
 
     @Transactional
@@ -21,6 +22,23 @@ class BootStrap {
                 new Role(authority: authority)
                 .save(failOnError: true)
             }
+        }
+    }
+
+    @Transactional
+    void inicializarUsuarioTeste() {
+        if (!Usuario.findByEmail('teste@linketinder.com')) {
+            Usuario usuario = new Usuario(
+                    email: 'teste@linketinder.com',
+                    password: 'SenhaTeste123'
+            ).save(failOnError: true, flush: true)
+
+            Role role = Role.findByAuthority('ROLE_CANDIDATO')
+
+            new UsuarioRole(
+                    usuario: usuario,
+                    role: role
+            ).save(failOnError: true)
         }
     }
 

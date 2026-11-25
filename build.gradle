@@ -7,6 +7,7 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:6.2.4"
         classpath "org.grails.plugins:hibernate5:8.1.0"
         classpath "org.grails.plugins:views-gradle:3.2.3"
+        classpath 'org.grails.plugins:database-migration:5.0.0'
     }
 }
 
@@ -35,6 +36,14 @@ configurations {
     }
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'grails-app/migrations'
+        }
+    }
+}
+
 dependencies {
     profile "org.grails.profiles:rest-api"
     implementation "org.grails:grails-core"
@@ -56,9 +65,11 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation 'org.grails.plugins:spring-security-core:6.1.2'
+    implementation 'org.grails.plugins:database-migration:5.0.0'
+    implementation 'org.liquibase:liquibase-core:4.19.0'
     compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
-    runtimeOnly "com.h2database:h2"
+    runtimeOnly "org.postgresql:postgresql"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
     testImplementation "io.micronaut:micronaut-inject-groovy"
     testImplementation "org.grails:grails-gorm-testing-support"
