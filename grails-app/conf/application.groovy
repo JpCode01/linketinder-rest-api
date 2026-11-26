@@ -13,17 +13,25 @@ grails.plugin.springsecurity.rest.token.storage.jwt.secret = System.getenv('JWT_
 grails.plugin.springsecurity.rest.token.generation.jwt.algorithm = 'HS256'
 grails.plugin.springsecurity.rest.token.storage.jwt.expiration = 900
 grails.plugin.springsecurity.rest.token.storage.jwt.refreshExpiration = 604800
+grails.plugin.springsecurity.rest.token.validation.enableAnonymousAccess = true
+grails.plugin.springsecurity.rest.token.validation.useBearerToken = true
+grails.plugin.springsecurity.rest.token.validation.endpointUrl = '/api/v1/auth/validate'
+grails.plugin.springsecurity.securityConfigType = 'Annotation'
+grails.plugin.springsecurity.rejectIfNoRule = true
+grails.plugin.springsecurity.fii.rejectPublicInvocations = false
+
+grails.plugin.springsecurity.filterChain.chainMap = [
+		[
+				pattern: '/**',
+				filters: 'JOINED_FILTERS,-exceptionTranslationFilter,-authenticationProcessingFilter,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter'
+		]
+]
+
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	[pattern: '/',               access: ['permitAll']],
-	[pattern: '/error',          access: ['permitAll']],
-	[pattern: '/index',          access: ['permitAll']],
-	[pattern: '/index.gsp',      access: ['permitAll']],
-	[pattern: '/shutdown',       access: ['permitAll']],
-	[pattern: '/assets/**',      access: ['permitAll']],
-	[pattern: '/**/js/**',       access: ['permitAll']],
-	[pattern: '/**/css/**',      access: ['permitAll']],
-	[pattern: '/**/images/**',   access: ['permitAll']],
-	[pattern: '/**/favicon.ico', access: ['permitAll']]
+		[pattern: '/api/v1/auth/login', access: ['permitAll'], httpMethod: 'POST'],
+		[pattern: '/api/v1/auth/refresh', access: ['permitAll'], httpMethod: 'POST'],
+		[pattern: '/api/v1/auth/validate', access: ['isAuthenticated()']],
+		[pattern: '/error', access: ['permitAll']]
 ]
 
 grails.plugin.springsecurity.filterChain.chainMap = [

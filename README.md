@@ -211,7 +211,7 @@ grails.plugin.springsecurity.rest.token.storage.jwt.expiration = 900
 grails.plugin.springsecurity.rest.token.storage.jwt.refreshExpiration = 604800
 ```
 
-## Explicação rápida do fluxo
+## Explicação rápida do fluxo do Token
 
 * 1º Ao realizar login, User recebe Access Token e Refresh Token
 
@@ -221,4 +221,106 @@ grails.plugin.springsecurity.rest.token.storage.jwt.refreshExpiration = 604800
 
 * 4º Um novo Access Token é gerado
 
-* 5º Quando o Refresh Token expirar, será necessário que o User se autentique novamente 
+* 5º Quando o Refresh Token expirar, será necessário que o User se autentique novamente
+
+## Explicação rápida do que é e qual o fluxo da Filter Chain
+
+* ```Filter Chain```: Cadeia de filtros que interceptam uma requisição HTTP antes de chegar ao Controller, fazendo:
+
+  * Extração de credenciais 
+  * Validação de Tokens
+  * Establecer contextos de segurança 
+  * Verificar permissões
+
+* 1º Angular envia requisição com ```Authorization: Bearer JWT```
+
+* 2º ```RestAuthenticationFilter``` Processa credenciais no endpoint de login
+
+* 3º ```RestTokenValidationFilter``` Extrai e valida o Token 
+
+* 4º ```SecurityContext``` Disponibiliza o usuário autenticado 
+
+* 5º ```FilterSecurityInterceptor``` Verifica as permissões de acesso
+
+* 6º ```Controller``` Executa a operação solicitada
+
+## Continuando...
+
+* 16º Adicione ao ```application.groovy```
+```
+  grails.plugin.springsecurity.filterChain.chainMap = [
+      [
+      pattern: '/**',
+      filters: 'JOINED_FILTERS,-exceptionTranslationFilter,-authenticationProcessingFilter,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter'
+      ]
+  ]
+```
+Explicação: 
+
+Elemento	                       Responsabilidade
+
+pattern: '/**'	                   Aplica a cadeia a todas as URLs.
+JOINED_FILTERS	                   Inclui os filtros configurados pelo Spring Security.
+-exceptionTranslationFilter	       Remove o tratamento tradicional de exceções de segurança.
+-authenticationProcessingFilter	   Remove o processamento tradicional de login.
+-securityContextPersistenceFilter  Remove o mecanismo tradicional de contexto de segurança.
+-rememberMeAuthenticationFilter	   Remove a autenticação por Remember Me.
+
+* 17º Permitir acessos anônimos (Algumas requisições não precisam de validações para serem enviadas e recebidas, como de cadastro):
+```grails.plugin.springsecurity.rest.token.validation.enableAnonymousAccess = true```
+
+* 18º Configurar Bearer Token:
+```grails.plugin.springsecurity.rest.token.validation.useBearerToken = true```
+
+* 19º Configurar Endpoint de validação de TOKEN:
+```grails.plugin.springsecurity.rest.token.validation.endpointUrl = '/api/v1/auth/validate'```
+
+* 20º Configurar a política de segurança:
+```
+grails.plugin.springsecurity.securityConfigType = 'Annotation'
+grails.plugin.springsecurity.rejectIfNoRule = true
+grails.plugin.springsecurity.fii.rejectPublicInvocations = false
+```
+
+* 21º Modificar ```grails.plugin.springsecurity.controllerAnnotations.staticRules```:
+```
+grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+    [pattern: '/api/v1/auth/login', access: ['permitAll'], httpMethod: 'POST'],
+    [pattern: '/api/v1/auth/validate', access: ['isAuthenticated()']],
+    [pattern: '/error', access: ['permitAll']]
+]
+```
+
+* 22º Adicionar em ```controllers/linketinder/rest/api```:
+```
+package linketinder.rest.api
+
+class UrlMappings {
+    static mappings = {
+        delete "/$controller/$id(.$format)?"(action:"delete")
+        get "/$controller(.$format)?"(action:"index")
+        get "/$controller/$id(.$format)?"(action:"show")
+    ->  post "/api/v1/auth/refresh"(
+                controller: "restOauth",
+                action: "accessToken"
+        )
+        post "/$controller(.$format)?"(action:"save")
+        put "/$controller/$id(.$format)?"(action:"update")
+        patch "/$controller/$id(.$format)?"(action:"patch")
+        "/"(controller: 'application', action:'index')
+        "500"(view:'/error')
+        "404"(view:'/notFound')
+
+    }
+}
+```
+
+* 23º Adicionar o endpoint em ```application.groovy``` no ```grails.plugin.springsecurity.controllerAnnotations.staticRules```:
+```
+    grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+    [pattern: '/api/v1/auth/login', access: ['permitAll'], httpMethod: 'POST'],
+ -> [pattern: '/api/v1/auth/refresh', access: ['permitAll'], httpMethod: 'POST'],
+    [pattern: '/api/v1/auth/validate', access: ['isAuthenticated()']],
+    [pattern: '/error', access: ['permitAll']]
+    ]
+```

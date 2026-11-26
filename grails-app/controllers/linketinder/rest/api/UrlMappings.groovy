@@ -5,6 +5,10 @@ class UrlMappings {
         delete "/$controller/$id(.$format)?"(action:"delete")
         get "/$controller(.$format)?"(action:"index")
         get "/$controller/$id(.$format)?"(action:"show")
+        post "/api/v1/auth/refresh"(
+                controller: "restOauth",
+                action: "accessToken"
+        )
         post "/$controller(.$format)?"(action:"save")
         put "/$controller/$id(.$format)?"(action:"update")
         patch "/$controller/$id(.$format)?"(action:"patch")
