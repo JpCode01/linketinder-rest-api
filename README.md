@@ -1,8 +1,8 @@
 # Passo a passo para utilizar JWT e Autorização/Autenticação com diferentes usuários
 
-* 1º Rodar no terminal:.\gradlew.bat runCommand "-Pargs=s2-quickstart linketinder.rest.api Usuario Role"
-* 2º Adicionar conf/application → grails.plugin.springsecurity.userLookup.usernamePropertyName = 'email'
-* 3º Adicionar em grails-app/init/linketinder/rest/api/BootStrap.groovy
+* 1º Rodar no terminal:.\gradlew.bat runCommand ```-Pargs=s2-quickstart linketinder.rest.api Usuario Role```
+* 2º Adicionar ```conf/application.groovy```: ```grails.plugin.springsecurity.userLookup.usernamePropertyName = 'email'```
+* 3º Adicionar em ```grails-app/init/linketinder/rest/api/BootStrap.groovy```
 ```
   @Transactional
   void inicializarRoles() {
@@ -21,8 +21,8 @@
   }
 ```
 Adicionar no método init: inicializarRoles()
-* 4º Configurar conexão com o BD em grails-app/application.yml
-* 5º Em init/linktinder/rest/api, em BootStrap, testar os Roles:
+* 4º Configurar conexão com o BD em ```grails-app/application.yml```
+* 5º Em ```init/linktinder/rest/api```, em ```BootStrap```, testar os Roles:
 ```
     @Transactional
     void inicializarUsuarioTeste() {
@@ -41,8 +41,8 @@ Adicionar no método init: inicializarRoles()
         }
     }
 ```
-Adicionar no método init: inicializarUsuarioTeste()
-* 6º Incializar com Migrations com Liquibase do Grails modificando build.gradle:
+Adicionar no método init: ```inicializarUsuarioTeste()```
+* 6º Incializar com Migrations com Liquibase do Grails modificando ```build.gradle```:
 ```
 buildscript {
     repositories {
@@ -96,7 +96,7 @@ dependencies {
     testImplementation "org.spockframework:spock-core"
 }
 ```
-* 7º Modificar application.yml em conf:
+* 7º Modificar ```application.yml``` em conf:
 ```
 grails:
  -> plugin:
@@ -141,7 +141,7 @@ databaseChangeLog = {
     }
 }
 ```
-* 11º Voltar para a versão original do BootStrap:
+* 11º Voltar para a versão original do ```BootStrap```:
 ```
 package linketinder.rest.api
 
@@ -154,7 +154,7 @@ class BootStrap {
     }
 }
 ```
-* Verificar application.yml:
+* Verificar ```application.yml```:
 ```
 grails:
   plugin:
@@ -168,7 +168,7 @@ grails:
 implementation 'org.grails.plugins:spring-security-core:6.1.2'
 implementation 'org.grails.plugins:spring-security-rest:5.0.1'
 ```
-* 13º Em conf, no arquivo application.groovy, adicionar:
+* 13º Em conf, no arquivo ```application.groovy```, adicionar:
 ```
     // Added by the Spring Security Core plugin:
     grails.plugin.springsecurity.userLookup.userDomainClassName = 'linketinder.rest.api.Usuario'
@@ -201,7 +201,7 @@ $rng.GetBytes($bytes)
 [Convert]::ToBase64String($bytes)
 $rng.Dispose()
 ```
-OBS: Copiar resultado em .env ou como estiver lidando com secrets  
+OBS: Copiar resultado em ```.env``` ou como estiver lidando com secrets  
 * 15º Adicionar em ```application.groovy```:
 ```
 grails.plugin.springsecurity.rest.token.storage.jwt.useSignedJwt = true
